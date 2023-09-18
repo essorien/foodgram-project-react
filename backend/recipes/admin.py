@@ -1,25 +1,21 @@
 from django.contrib import admin
-
-from .models import (
-    Tag,
+from recipes.models import (
     Ingredient,
     Recipe,
-    IngredientForRecipe,
+    IngredientInRecipe,
     FavoriteRecipe,
     ShoppingCart,
+    RecipeTag
 )
 
 
-EMPTY_STRING: str = '-None-'
-
-
 class RecipeIngredientsAdmin(admin.StackedInline):
-    model = IngredientForRecipe
+    model = IngredientInRecipe
     autocomplete_fields = ('ingredient',)
 
 
 @admin.register(Recipe)
-class RecipeAdmin(admin.ModelAdmin):
+class RecipeListAdmin(admin.ModelAdmin):
     inlines = (RecipeIngredientsAdmin,)
     list_display = ('author', 'name', 'text', 'get_favorite_count')
     search_fields = (
@@ -29,19 +25,18 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = (
         'pub_date', 'tags',
     )
-    empty_value_display = EMPTY_STRING
 
     @admin.display(
-        description='Электронная почта автора'
+        description='Author Email'
     )
     def get_author(self, obj):
         return obj.author.email
 
-    @admin.display(description='Тэги')
+    @admin.display(description='Tags')
     def get_tags(self, obj):
         return ', '.join(str(tag) for tag in obj.tags.all())
 
-    @admin.display(description='Ингредиенты')
+    @admin.display(description='Ingredients')
     def get_ingredients(self, obj):
         return '\n '.join([
             f'{item["ingredient__name"]} - {item["amount"]}'
@@ -50,17 +45,16 @@ class RecipeAdmin(admin.ModelAdmin):
                 'ingredient__name',
                 'amount', 'ingredient__measurement_unit')])
 
-    @admin.display(description='В избранном')
+    @admin.display(description='In Favorites')
     def get_favorite_count(self, obj):
         return obj.favorites.count()
 
 
-@admin.register(Tag)
+@admin.register(RecipeTag)
 class TagAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'name', 'color', 'slug',)
     search_fields = ('name', 'slug',)
-    empty_value_display = EMPTY_STRING
 
 
 @admin.register(Ingredient)
@@ -69,18 +63,15 @@ class IngredientAdmin(admin.ModelAdmin):
         'id', 'name', 'measurement_unit',)
     search_fields = (
         'name', 'measurement_unit',)
-    empty_value_display = EMPTY_STRING
 
 
 @admin.register(FavoriteRecipe)
 class FavoriteRecipeAdmin(admin.ModelAdmin):
     ordering = ('user',)
     search_fields = ('recipe', 'user')
-    empty_value_display = EMPTY_STRING
 
 
 @admin.register(ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
     ordering = ('user',)
     search_fields = ('recipe', 'user')
-    empty_value_display = EMPTY_STRING

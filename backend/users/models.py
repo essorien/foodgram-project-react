@@ -1,43 +1,38 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
-from rest_framework.exceptions import ValidationError
 
 
-class CustomUser(AbstractUser):
-    """
-    Custom User model.
-    """
+class User(AbstractUser):
     username = models.CharField(
-        verbose_name='username',
+        verbose_name='User Nickname',
         max_length=150,
         unique=True,
         validators=(RegexValidator(
-            regex=r'^[\w.@+-]+\Z',
-            message=(
-                'Invalid value entered for "Username" field.')
+            regex=r'^[\w.@+-]+\Z', message=(
+                'Invalid value for "username" field.')
         ),)
     )
     email = models.EmailField(
-        verbose_name='Email',
+        verbose_name='Email Address',
         max_length=254,
         db_index=True,
         unique=True,
-        help_text='Enter your email address.',
-    )
-    last_name = models.CharField(
-        verbose_name='Last Name',
-        max_length=150,
-        help_text='Enter your last name.',
+        help_text='Enter your email address',
     )
     first_name = models.CharField(
         verbose_name='First Name',
         max_length=150,
-        help_text='Enter your first name.',
+        help_text='Enter your first name',
+    )
+    last_name = models.CharField(
+        verbose_name='Last Name',
+        max_length=150,
+        help_text='Enter your last name',
     )
 
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
     USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
         verbose_name = 'User'
@@ -45,26 +40,23 @@ class CustomUser(AbstractUser):
         ordering = ('id',)
 
     def __str__(self):
-        return f'{self.username}: {self.email}.'
+        return f'{self.username}'
 
 
 class Subscription(models.Model):
-    """
-    Subscriber Model.
-    """
-    follower = models.ForeignKey(
-        CustomUser,
+    user = models.ForeignKey(
+        User,
         on_delete=models.CASCADE,
-        related_name='following',
-        verbose_name='Follower',
+        related_name='subscribers',
+        verbose_name='Subscriber',
     )
-    followed_author = models.ForeignKey(
-        CustomUser,
+    author = models.ForeignKey(
+        User,
         on_delete=models.CASCADE,
-        related_name='followers',
-        verbose_name='Followed Author',
+        related_name='subscriptions',
+        verbose_name='Author',
     )
-    subscription_date = models.DateTimeField(
+    created = models.DateTimeField(
         'Subscription Date',
         auto_now_add=True,
     )
@@ -75,15 +67,11 @@ class Subscription(models.Model):
         ordering = ('-id',)
         constraints = (
             models.UniqueConstraint(
-                fields=['follower', 'followed_author'],
-                name='unique_following',
+                fields=['user', 'author'],
+                name='unique_subscription',
             ),
         )
 
-    def clean(self):
-        if self.follower == self.followed_author:
-            raise ValidationError("You cannot subscribe to yourself.")
-
     def __str__(self):
-        return (f'User {self.follower.username} '
-                f'is following {self.followed_author.username}')
+        return (f'User {self.user.username} '
+                f'subscribed to {self.author.username}')
