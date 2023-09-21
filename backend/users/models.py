@@ -2,11 +2,13 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
 
+from core import constants
+
 
 class User(AbstractUser):
     username = models.CharField(
         verbose_name='User Nickname',
-        max_length=150,
+        max_length=constants.MAX_USERNAME_LENGTH,
         unique=True,
         validators=(RegexValidator(
             regex=r'^[\w.@+-]+\Z', message=(
@@ -15,19 +17,19 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         verbose_name='Email Address',
-        max_length=254,
+        max_length=constants.MAX_EMAIL_LENGTH,
         db_index=True,
         unique=True,
         help_text='Enter your email address',
     )
     first_name = models.CharField(
         verbose_name='First Name',
-        max_length=150,
+        max_length=constants.MAX_NAME_LENGTH,
         help_text='Enter your first name',
     )
     last_name = models.CharField(
         verbose_name='Last Name',
-        max_length=150,
+        max_length=constants.MAX_NAME_LENGTH,
         help_text='Enter your last name',
     )
 

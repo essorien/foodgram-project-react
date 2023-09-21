@@ -1,13 +1,14 @@
 from django.contrib.auth import get_user_model
-from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet as DjoserUserViewSet
-from rest_framework import filters, status, viewsets
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework import filters, status, viewsets
 from rest_framework.viewsets import ReadOnlyModelViewSet
+
+from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet as DjoserUserViewSet
 
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import LimitPageNumberPagination
@@ -19,7 +20,7 @@ from .serializers import (
     SubscribeSerializer,
     TagSerializer,
     UserSerializer,
-    UserPasswordSerializer
+    UserPasswordSerializer,
 )
 from .utils import collect_shopping_cart
 from recipes.models import (
@@ -27,7 +28,7 @@ from recipes.models import (
     Ingredient,
     Recipe,
     RecipeTag,
-    ShoppingCart
+    ShoppingCart,
 )
 from users.models import Subscription
 

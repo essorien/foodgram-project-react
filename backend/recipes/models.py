@@ -2,23 +2,33 @@ from django.contrib.auth import get_user_model
 from django.core import validators
 from django.db import models
 
+from colorfield.fields import ColorField
+
+from core import constants
+
 User = get_user_model()
 
 
 class RecipeTag(models.Model):
     name = models.CharField(
         'Tag Name',
-        max_length=60,
+        max_length=constants.RECIPE_TAG_NAME_LENGTH,
         unique=True,
     )
-    color = models.CharField(
+    color = ColorField(
         'Color in HEX',
-        max_length=7,
+        max_length=constants.RECIPE_TAG_COLOR_LENGTH,
         unique=True,
+        validators=[
+            validators.RegexValidator(
+                regex=r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+                message="Color must be in HEX format (e.g., #RRGGBB).",
+            ),
+        ],
     )
     slug = models.SlugField(
         'Unique Slug',
-        max_length=80,
+        max_length=constants.RECIPE_TAG_SLUG_LENGTH,
         unique=True,
     )
 
@@ -34,17 +44,23 @@ class RecipeTag(models.Model):
 class Ingredient(models.Model):
     name = models.CharField(
         'Ingredient Name',
-        max_length=200,
+        max_length=constants.INGREDIENT_NAME_LENGTH,
     )
     measurement_unit = models.CharField(
         'Measurement Unit',
-        max_length=20,
+        max_length=constants.INGREDIENT_UNIT_LENGTH,
     )
 
     class Meta:
         ordering = ('name',)
         verbose_name = 'Ingredient'
         verbose_name_plural = 'Ingredients'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'measurement_unit'],
+                name='unique_name_measurement_unit',
+            ),
+        ]
 
     def __str__(self):
         return f'{self.name}, {self.measurement_unit}.'
@@ -59,11 +75,11 @@ class Recipe(models.Model):
     )
     name = models.CharField(
         'Recipe Name',
-        max_length=255,
+        max_length=constants.RECIPE_NAME_LENGTH,
     )
     image = models.ImageField(
         'Image URL',
-        # upload_to='recipe/',
+        upload_to='recipe/',
         blank=True,
         null=True,
     )
@@ -83,11 +99,11 @@ class Recipe(models.Model):
         verbose_name='Cooking Time in Minutes',
         validators=[
             validators.MinValueValidator(
-                1,
+                constants.MIN_COOKING_TIME,
                 message='Minimum cooking time: 1 minute!',
             ),
             validators.MaxValueValidator(
-                1440,
+                constants.MAX_COOKING_TIME,
                 message='Maximum cooking time: 1440 minutes!',
             )
         ],
@@ -121,10 +137,11 @@ class IngredientInRecipe(models.Model):
         related_name='recipe_quantities',
     )
     amount = models.PositiveIntegerField(
-        default=1,
+        default=constants.MIN_INGREDIENT_AMOUNT,
         validators=(
             validators.MinValueValidator(
-                1, message='Minimum ingredient amount is 1!'),
+                constants.MIN_INGREDIENT_AMOUNT,
+                message='Minimum ingredient amount is 1!'),
         ),
         verbose_name='Amount',
     )
@@ -159,10 +176,6 @@ class RecipeUserList(models.Model):
 
 
 class FavoriteRecipe(RecipeUserList):
-    """
-    Favorite Recipe Model.
-    """
-
     class Meta(RecipeUserList.Meta):
         default_related_name = 'favorites'
         verbose_name = 'Favorite Recipe'
@@ -181,10 +194,6 @@ class FavoriteRecipe(RecipeUserList):
 
 
 class ShoppingCart(RecipeUserList):
-    """
-    Shopping Cart Model.
-    """
-
     class Meta(RecipeUserList.Meta):
         default_related_name = 'shopping_cart'
         verbose_name = 'Shopping Cart'

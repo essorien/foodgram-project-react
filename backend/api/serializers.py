@@ -1,8 +1,9 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.hashers import make_password
-from djoser.serializers import UserSerializer as DjoserUserSerializer
 from rest_framework import serializers, validators
 from rest_framework.generics import get_object_or_404
+
+from djoser.serializers import UserSerializer as DjoserUserSerializer
 
 from .utils import Base64ImageField
 from recipes.models import (
@@ -14,6 +15,7 @@ from recipes.models import (
     RecipeTag,
 )
 from users.models import Subscription
+from core import constants
 
 User = get_user_model()
 
@@ -24,7 +26,7 @@ class UserSerializer(DjoserUserSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username',
-                  'first_name', 'last_name', 'is_subscribed')
+                  'first_name', 'last_name', 'is_subscribed',)
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
@@ -159,7 +161,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('id', 'tags', 'author', 'ingredients',
                   'name', 'image', 'text', 'cooking_time',
-                  'is_favorited', 'is_in_shopping_cart')
+                  'is_favorited', 'is_in_shopping_cart',)
 
     @staticmethod
     def __create_ingredients(recipe, ingredients):
@@ -215,7 +217,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             errors.append('Add at least one ingredient for the recipe.')
         added_ingredients = []
         for ingredient in ingredients:
-            if int(ingredient['amount']) < 1:
+            if int(ingredient['amount']) < constants.MIN_INGREDIENT_AMOUNT:
                 errors.append('Ingredient must be greater than 0.')
             if ingredient['id'] in added_ingredients:
                 errors.append('Cannot add the same ingredient')
@@ -224,9 +226,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         if len(tags) > len(set(tags)):
             errors.append('Cannot use the same tag more than once.')
         cooking_time = float(data.get('cooking_time'))
-        if cooking_time < 1:
+        if cooking_time < constants.MIN_COOKING_TIME:
             errors.append('Cooking time must be at least 1 minute.')
-        if cooking_time > 1440:
+        if cooking_time > constants.MAX_COOKING_TIME:
             errors.append('Cooking time cannot be more than 1440 minutes.')
         if errors:
             raise serializers.ValidationError({'errors': errors})

@@ -14,7 +14,5 @@ class CustomUserAdmin(admin.ModelAdmin):
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = (
-        'id', 'user', 'author', 'created',)
-    search_fields = (
-        'user__email', 'author__email',)
+    list_display = ('id', 'user', 'author', 'created')
+    search_fields = ('user__email', 'author__email')

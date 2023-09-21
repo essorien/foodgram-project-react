@@ -1,7 +1,9 @@
 import os
-from pathlib import Path
 
 from dotenv import load_dotenv
+from pathlib import Path
+
+from core import constants
 
 load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,6 +28,7 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'recipes.apps.RecipesConfig',
     'users.apps.UsersConfig',
+    'colorfield',
 ]
 
 MIDDLEWARE = [
@@ -119,7 +122,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS':
         'api.pagination.LimitPageNumberPagination',
-    'PAGE_SIZE': 6,
+    'PAGE_SIZE': constants.DEFAULT_PAGE_SIZE,
 }
 
 DJOSER = {
