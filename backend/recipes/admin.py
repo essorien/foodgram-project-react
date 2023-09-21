@@ -53,7 +53,9 @@ class RecipeListAdmin(admin.ModelAdmin):
     def display_image(self, obj):
         if obj.image:
             image_url = obj.image.url
-            return mark_safe(f'<img src="{image_url}" width="100" height="100" />')
+            return mark_safe(
+                f'<img src="{image_url}" width="100" height="100" />',
+            )
         return "No Image"
 
 

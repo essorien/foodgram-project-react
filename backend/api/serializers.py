@@ -5,7 +5,7 @@ from rest_framework.generics import get_object_or_404
 
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 
-from .utils import Base64ImageField
+from api.utils import Base64ImageField
 from recipes.models import (
     Ingredient,
     IngredientInRecipe,
