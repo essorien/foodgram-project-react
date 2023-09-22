@@ -52,4 +52,7 @@ docker-compose up -d
 - Собрать статику:
 
 - ```docker-compose exec backend python manage.py collectstatic --no-input ```
+
+- Добавить ингредиенты в базу:
+- ```docker-compose exec backend python manage.py load_json ```
 ## Теперь доступность проекта можно проверить по адресу http://localhost/
