@@ -22,7 +22,7 @@ from api.serializers import (
     UserSerializer,
     UserPasswordSerializer,
 )
-from .utils import collect_shopping_cart
+from api.utils import collect_shopping_cart
 from recipes.models import (
     FavoriteRecipe,
     Ingredient,

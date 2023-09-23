@@ -163,8 +163,8 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'name', 'image', 'text', 'cooking_time',
                   'is_favorited', 'is_in_shopping_cart',)
 
-    @staticmethod
-    def __create_ingredients(recipe, ingredients):
+    @classmethod
+    def create_ingredients(cls, recipe, ingredients):
         IngredientInRecipe.objects.bulk_create(
             [IngredientInRecipe(recipe=recipe,
                                 ingredient_id=ingredient.get('id'),
@@ -177,14 +177,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(image=image, **validated_data)
         recipe.tags.set(tags)
-        self.__create_ingredients(recipe, ingredients)
+        self.create_ingredients(recipe, ingredients)
         return recipe
 
     def update(self, instance, validated_data):
         instance.tags.clear()
         instance.tags.set(validated_data.pop('tags'))
         IngredientInRecipe.objects.filter(recipe=instance).delete()
-        self.__create_ingredients(
+        self.create_ingredients(
             recipe=instance, ingredients=validated_data.pop('ingredients')
         )
         super().update(instance, validated_data)
@@ -204,7 +204,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
         return FavoriteRecipe.objects.filter(recipe=obj, user=user).exists()
 
-    def get_is_in_shopping_cart(self, obj):
+    def is_in_user_shopping_cart(self, obj):
         user = self.context.get('request').user
         if not user or user.is_anonymous:
             return False
@@ -218,7 +218,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         added_ingredients = []
         for ingredient in ingredients:
             if int(ingredient['amount']) < constants.MIN_INGREDIENT_AMOUNT:
-                errors.append('Ingredient must be greater than 0.')
+                errors.append(
+                    f'Ingredient with id - {ingredient["id"]} '
+                    f'must be integer and ≥{constants.MIN_INGREDIENT_AMOUNT}.'
+                )
             if ingredient['id'] in added_ingredients:
                 errors.append('Cannot add the same ingredient')
             added_ingredients.append(ingredient['id'])
@@ -227,9 +230,15 @@ class RecipeSerializer(serializers.ModelSerializer):
             errors.append('Cannot use the same tag more than once.')
         cooking_time = float(data.get('cooking_time'))
         if cooking_time < constants.MIN_COOKING_TIME:
-            errors.append('Cooking time must be at least 1 minute.')
+            errors.append(
+                f'Cooking time must be '
+                f'≥{constants.MIN_COOKING_TIME} minute.'
+            )
         if cooking_time > constants.MAX_COOKING_TIME:
-            errors.append('Cooking time cannot be more than 1440 minutes.')
+            errors.append(
+                f'Cooking time must be '
+                f'≤ {constants.MAX_COOKING_TIME} minutes.'
+            )
         if errors:
             raise serializers.ValidationError({'errors': errors})
         data['ingredients'] = ingredients
