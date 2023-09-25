@@ -4,13 +4,14 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from core import constants
+from decouple import config
 
 load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='django-key')
 DEBUG = os.getenv('DEBUG', '') == 'True'
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1").split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost').split(',')
 
 AUTH_USER_MODEL = 'users.User'
 
