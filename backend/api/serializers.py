@@ -155,7 +155,8 @@ class RecipeSerializer(serializers.ModelSerializer):
                                                read_only=True,
                                                source='recipe_ingredients')
     is_favorited = serializers.SerializerMethodField()
-    is_in_shopping_cart = serializers.SerializerMethodField(method_name="user_shopping_cart")
+    is_in_shopping_cart = serializers.SerializerMethodField(
+        method_name="user_shopping_cart")
 
     class Meta:
         model = Recipe

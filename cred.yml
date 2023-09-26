@@ -1,3 +1,5 @@
 repo_owner: essorien
 domain: https://hachiroku.ddnsking.com/
 dockerhub_username: essorien
+superuser_login: admin@admin.com
+supeuser_pass: admin
